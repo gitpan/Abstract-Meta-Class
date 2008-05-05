@@ -1,0 +1,11 @@
+Changes
+lib/Abstract/Meta/Class.pm
+lib/Abstract/Meta/Attribute.pm
+lib/Abstract/Meta/Attribute/Method.pm
+Makefile.PL
+MANIFEST
+README
+t/meta/attribute.t
+t/meta/association.t
+t/meta/class.t
+META.yml                                 Module meta-data (added by MakeMaker)
