@@ -5,16 +5,16 @@ use warnings;
 use Carp 'confess';
 use vars qw($VERSION);
 
-$VERSION = 0.01;
+$VERSION = 0.02;
 
 
 =head1 NAME
 
-Abstract::Meta::Attribute::Method
+Abstract::Meta::Attribute::Method - Method generator.
 
 =head1 DESCRIPTION
 
-Sub class of attributes that generates methods for attribute's definition.
+Generates methods for attribute's definition.
 
 =head1 SYNOPSIS
 
@@ -816,6 +816,6 @@ the Perl README file.
 
 =head1 AUTHOR
 
-Adrian Witas, E<lt>adrian@webapp.strefa.pl</gt>
+Adrian Witas, adrian@webapp.strefa.pl
 
 =cut

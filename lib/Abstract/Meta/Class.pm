@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK %EXPORT_TAGS);
 use Carp 'confess';
 use vars qw($VERSION);
 use Abstract::Meta::Attribute::Method;
-$VERSION = 0.02;
+$VERSION = 0.03;
 
 @EXPORT_OK = qw(has new apply_contructor_parameter install_meta_class abstract abstract_class);
 %EXPORT_TAGS = (all => \@EXPORT_OK, has => ['has', 'install_meta_class', 'abstract', 'abstract_class']);
@@ -27,13 +27,9 @@ Abstract::Meta::Class - Simple meta object protocol implementation.
     use Abstract::Meta::Class ':all';
 
     has '$.attr1' => (default => 0);
-
     has '%.attrs2' => (default => {a => 1, b => 3}, item_accessor => 'attr2');
-
     has '@.atts3' => (default => [1, 2, 3], required => 1, item_accessor => 'attr3');
-
     has '&.att3' => (required => 1);
-
     has '$.att4' => (default => sub { 'stuff' } , required => 1);
 
 
@@ -42,10 +38,8 @@ Abstract::Meta::Class - Simple meta object protocol implementation.
     my $obj = Dummy->new(attr3 => sub {});
     my $attr1 = $obj->attr1; #0
     $obj->set_attr1(1);
-
     $obj->attr2('c', 4);
     $obj->attrs2 #{a => 1, b => 3. c => 4};
-
     my $val_a = $obj->attr2('a');
     my $item_1 = $obj->attr3(1);
     $obj->count_attrs3();
@@ -64,9 +58,7 @@ Meta object protocol implementation,
     use Abstract::Meta::Class ':all';
 
     has '$.attr1' => (default => 0);
-
     has '&.att3' => (required => 1);
-
 
     use Dummy;
 
@@ -94,7 +86,6 @@ Meta object protocol implementation,
     my $x = $obj->array_item(0);
     my $y = $obj->pop_array;
 
-
     #NOTE scalar, array context sensitive
     my $array_ref = $obj->array;
     my @array = $obj->array;
@@ -111,7 +102,6 @@ Meta object protocol implementation,
     use Abstract::Meta::Class ':all';
 
     has '%.hash' => (item_accessor => 'hash_item');
-
 
     use Dummy;
 
@@ -136,6 +126,8 @@ Meta object protocol implementation,
     has '@.array' => (item_accessor => 'array_item');
 
 
+    use Dummy;
+
     my $obj = Dummy->new(array => {}, hash => []) #dies incompatible types.
 
 
@@ -152,9 +144,7 @@ Meta object protocol implementation,
     use Abstract::Meta::Class ':all';
 
     has '$.to_one'  => (associated_class => 'AssociatedClass');
-
     has '@.ordered' => (associated_class => 'AssociatedClass');
-
     has '%.to_many' => (associated_class => 'AssociatedClass', item_accessor => 'many', index_by => 'id');
 
 
@@ -184,7 +174,6 @@ Meta object protocol implementation,
     use Abstract::Meta::Class ':all';
 
     has '$.name';
-
     has '%.details' => (associated_class => 'Detail', the_other_end => 'master', item_accessor => 'detail', index_by => 'id');
 
 
@@ -193,7 +182,6 @@ Meta object protocol implementation,
     use Abstract::Meta::Class ':all';
 
     has '$.id'     => (required => 1);
-
     has '$.master' => (
         associated_class => 'Master',
         the_other_end    => 'details'
@@ -210,15 +198,11 @@ Meta object protocol implementation,
     );
 
     my $master = Master->new(name => 'foo', details => [@details]);
-
     print $details[0]->master->name;
 
     - while using an array/hash association storage remove_<attribute_name> | add_<attribute_name> are added.
-
     $master->add_details(Detail->new(id => 4),);
-
     $master->remove_details($details[0]);
-
     #cleanup method is added to class, that deassociates all bidirectional associations
 
 
@@ -257,7 +241,6 @@ Meta object protocol implementation,
 
     my $obj = Triggers->new(y => [1,2,3]);
 
-
     - add hoc decorators
 
     package Class;
@@ -266,11 +249,8 @@ Meta object protocol implementation,
     has '%.attrs' => (item_accessor => 'attr');
 
     my $attr = DynamicInterceptor->meta->attribute('attrs');
-
     my $obj = DynamicInterceptor->new(attrs => {a => 1, b => 2});
-
     my $a = $obj->attr('a');
-
     my %hook_access_log;
     my $ncode_ref = sub {
         my ($self, $attribute, $scope, $key) = @_;
@@ -297,16 +277,13 @@ Meta object protocol implementation,
     use Abstract::Meta::Class ':all';
 
     has '$.attr1';
-
     abstract => 'method1';
 
 
     package Class;
 
     use base 'BaseClass';
-
     sub method1 {};
-
 
     use Class;
 
@@ -322,9 +299,7 @@ Meta object protocol implementation,
     use Abstract::Meta::Class ':all';
 
     abstract_class;
-
     abstract => 'method1';
-
     abstract => 'method2';
 
 
@@ -333,7 +308,6 @@ Meta object protocol implementation,
     use base 'InterfaceA';
 
     sub method1 {};
-
     sub method2 {};
 
     use Class;
@@ -346,7 +320,6 @@ Meta object protocol implementation,
     use Abstract::Meta::Class ':all';
 
     has 'attr1';
-
     has 'interface_attr' => (associated_class => 'InterfaceA', required => 1);
 
 
@@ -865,6 +838,6 @@ the Perl README file.
 
 =head1 AUTHOR
 
-Adrian Witas, E<lt>adrian@webapp.strefa.pl</gt>
+Adrian Witas, adrian@webapp.strefa.pl
 
 =cut

@@ -6,17 +6,16 @@ use Carp 'confess';
 use base 'Abstract::Meta::Attribute::Method';
 use vars qw($VERSION);
 
-$VERSION = 0.01;
+$VERSION = 0.02;
 
 =head1 NAME
 
-Abstract::Meta::Attribute
+Abstract::Meta::Attribute - Meta object attribute.
 
 =head1 SYNOPSIS
 
     use Abstract::Meta::Class ':all';
     has '$.attr1' => (default => 0);    
-
 
 =head1 DESCRIPTION
 
@@ -275,7 +274,6 @@ Returns code reference that will be replace data read routine
             }
         },
     );
-
     has '@.array_attrs.' => (
         item_accessor => 'array_item'
         on_read => sub {
@@ -372,6 +370,6 @@ the Perl README file.
 
 =head1 AUTHOR
 
-Adrian Witas, E<lt>adrian@webapp.strefa.pl</gt>
+Adrian Witas, adrian@webapp.strefa.pl
 
 =cut
