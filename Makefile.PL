@@ -6,9 +6,11 @@ WriteMakefile(
     VERSION_FROM => 'lib/Abstract/Meta/Class.pm',
     DISTNAME     => 'Abstract-Meta-Class',
     PREREQ_PM    => { 
-        'Carp'       => 0,
+	'Test::More' 	      => 0,
+        'Carp'       	      => 0,
+	'Test::Pod'           => 0,
+	'Test::Pod::Coverage' => 0,
     },
-
     test	 => { TESTS => 't/*.t t/meta/*.t'},
     dist         => { COMPRESS => 'gzip', SUFFIX => 'gz' },
     clean        => { FILES => 'MANIFEST.bak' },

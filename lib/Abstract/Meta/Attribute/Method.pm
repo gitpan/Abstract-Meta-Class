@@ -117,9 +117,9 @@ sub index_association_data {
     return $data if ref($data) eq 'HASH';
     my %result;
     if($index && $$data[0]->can($index)) {
-        %result = map {$_->$index, $_} @$data;
+        %result = (map {($_->$index, $_)} @$data);
     } else {
-        %result = map {$_ ."", $_} @$data;
+        %result = (map {($_  . "", $_)} @$data);
     }
     \%result;
 }
