@@ -7,14 +7,14 @@ use base 'Exporter';
 use vars qw(@EXPORT_OK %EXPORT_TAGS);
 use Carp 'confess';
 use vars qw($VERSION);
-use Abstract::Meta::Attribute::Method;
-$VERSION = 0.03;
+
+$VERSION = 0.04;
 
 @EXPORT_OK = qw(has new apply_contructor_parameter install_meta_class abstract abstract_class);
 %EXPORT_TAGS = (all => \@EXPORT_OK, has => ['has', 'install_meta_class', 'abstract', 'abstract_class']);
 
 use Abstract::Meta::Attribute;
-
+use Abstract::Meta::Attribute::Method;
 
 =head1 NAME
 

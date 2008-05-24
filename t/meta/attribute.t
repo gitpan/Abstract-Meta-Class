@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 44;
+use Test::More tests => 45;
 
 {
     package Dummy;
@@ -231,4 +231,15 @@ is($default->c->(), '123', 'should have code value');
     my $b = $obj->attr('b');
     ::is_deeply(\%access_log, {item_accessor => 2, accessor => 2}, 'should have updated access log');
     ::is_deeply(\%hook_access_log, {item_accessor => 1, accessor => 1}, 'should have updated hook_access_log');
+}
+
+
+{
+    package StorageKey;
+    use Abstract::Meta::Class ':all';
+    has '$.x' => (required => 1, storage_key => 'x');
+    has '@.y' => (required => 1, storage_key => 'y');
+    
+    my $obj = StorageKey->new(x => 1, y => [1,2]);
+    ::is_deeply($obj, {x => 1, y =>[1,2]}, 'should have storage key');
 }

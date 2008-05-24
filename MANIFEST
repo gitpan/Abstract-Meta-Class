@@ -1,11 +1,13 @@
 Changes
-lib/Abstract/Meta/Class.pm
 lib/Abstract/Meta/Attribute.pm
 lib/Abstract/Meta/Attribute/Method.pm
+lib/Abstract/Meta/Class.pm
 Makefile.PL
 MANIFEST
+META.yml			Module meta-data (added by MakeMaker)
 README
-t/meta/attribute.t
 t/meta/association.t
+t/meta/attribute.t
 t/meta/class.t
-META.yml                                 Module meta-data (added by MakeMaker)
+t/pod.t
+t/pod_coverage.t

@@ -1,6 +1,6 @@
 
 use ExtUtils::MakeMaker;
-
+#auto_manifest;
 WriteMakefile(
     NAME         => 'Abstract::Meta::Class',
     VERSION_FROM => 'lib/Abstract/Meta/Class.pm',
@@ -9,7 +9,7 @@ WriteMakefile(
         'Carp'       => 0,
     },
 
-    test	 => { TESTS => 't/meta/*.t'},
+    test	 => { TESTS => 't/*.t t/meta/*.t'},
     dist         => { COMPRESS => 'gzip', SUFFIX => 'gz' },
     clean        => { FILES => 'MANIFEST.bak' },
 );

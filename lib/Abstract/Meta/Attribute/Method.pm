@@ -5,7 +5,7 @@ use warnings;
 use Carp 'confess';
 use vars qw($VERSION);
 
-$VERSION = 0.02;
+$VERSION = 0.03;
 
 
 =head1 NAME
@@ -181,7 +181,10 @@ sub validate_associated_class {
 {   my %pending_association;
 
 
-=item start_association
+=item start_association_process
+
+Start association process (to avoid infinitive look of associating the others ends)
+Takes obj reference.
 
 =cut
 
@@ -193,6 +196,8 @@ sub validate_associated_class {
 
 =item has_pending_association
 
+Returns true is object is during association process.
+
 =cut
 
     sub has_pending_association {
@@ -201,7 +206,9 @@ sub validate_associated_class {
     }
 
 
-=item end_association
+=item end_association_process
+
+Compleetes association process.
 
 =cut
 
@@ -474,7 +481,7 @@ sub generate_hash_mutator_method {
 }
 
 
-=item generate_hash_accessor_method
+=item generate_hash_item_accessor_method
 
 =cut
 
@@ -513,7 +520,7 @@ sub generate_hash_add_method {
         my $hash_ref = $self->$accessor();
         foreach my $value (@values) {
             next unless ref($value);
-            my $key = ($index_by ? $value->$index_by : $value . "");
+            my $key = ($index_by ? $value->$index_by : $value . "") or confess "unknown key hash at add_$accessor";
             $attr->validate_associated_class($self, $value);
             $on_change->($self, $attr, 'item_accessor', \$value, $key) or return $hash_ref->{$key}
               if ($on_change);
@@ -624,7 +631,7 @@ sub generate_array_shift_method {
 }
 
 
-=item generate_array_shift_method
+=item generate_array_unshift_method
 
 =cut
 

@@ -1,5 +1,9 @@
 Revision history for Perl extension Abstract::Meta::Class.
 
+0.04  Sat May 24 2008
+	-  Fix pod documentation.
+	-  Storage key option fix
+	
 0.03  Mon May 05 2008
 	-  Fix pod documentation.
 

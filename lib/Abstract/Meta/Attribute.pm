@@ -6,7 +6,7 @@ use Carp 'confess';
 use base 'Abstract::Meta::Attribute::Method';
 use vars qw($VERSION);
 
-$VERSION = 0.02;
+$VERSION = 0.03;
 
 =head1 NAME
 
@@ -68,9 +68,10 @@ Initialises attribute
             confess "unknown attribute $k"
             unless Abstract::Meta::Attribute->can($k);
         }
-        my $storage_key = $args{name} or confess "name is requried";
-        my ($type, $accessor_name) = ($storage_key =~ /^([\$\@\%\&])\.(.*)$/);
-        confess "invalid attribute defintion ${class}::" .($accessor_name || $storage_key) .", supported prefixes are \$.,%.,\@.,&."
+        my $name = $args{name} or confess "name is requried";
+        my $storage_key = $args{storage_key} || $args{name};
+        my ($type, $accessor_name) = ($name =~ /^([\$\@\%\&])\.(.*)$/);
+        confess "invalid attribute defintion ${class}::" .($accessor_name || $name) .", supported prefixes are \$.,%.,\@.,&."
           if ! $type || ! $supported_type{$type};
 
         my %options;
