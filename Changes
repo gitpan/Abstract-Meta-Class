@@ -1,5 +1,8 @@
 Revision history for Perl extension Abstract::Meta::Class.
 
+0.06  Sun May 25 2008
+	-  Added has_<accessr>, reset_<accessor> methods for association attributes
+
 0.05  Sun May 25 2008
 	-  Fix Makefile.PL (Test::Pod, Test::Pod::Coverage)
 

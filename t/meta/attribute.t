@@ -219,10 +219,10 @@ is($default->c->(), '123', 'should have code value');
  
     my %hook_access_log;
     my $ncode_ref = sub {
-            my ($self, $attribute, $scope, $key) = @_;
-            $hook_access_log{$scope}++;
-            #do some stuff
-            $code_ref->($self, $attribute, $scope, $key);
+        my ($self, $attribute, $scope, $key) = @_;
+        $hook_access_log{$scope}++;
+        #do some stuff
+        $code_ref->($self, $attribute, $scope, $key);
     };
     
     

@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK %EXPORT_TAGS);
 use Carp 'confess';
 use vars qw($VERSION);
 
-$VERSION = 0.05;
+$VERSION = 0.06;
 
 @EXPORT_OK = qw(has new apply_contructor_parameter install_meta_class abstract abstract_class);
 %EXPORT_TAGS = (all => \@EXPORT_OK, has => ['has', 'install_meta_class', 'abstract', 'abstract_class']);
@@ -773,6 +773,11 @@ sub install_attribute_methods {
     if (($perl_type eq 'Array' || $perl_type eq 'Hash') && $attribute->associated_class) {
         add_method($self->associated_class, "add_${accessor}", $attribute->generate('add'), $remove_existing_method);
         add_method($self->associated_class, "remove_${accessor}", $attribute->generate('remove'), $remove_existing_method);
+    }
+    
+    if($attribute->associated_class) {
+        add_method($self->associated_class, "reset_${accessor}", $attribute->generate('reset'), $remove_existing_method);
+        add_method($self->associated_class, "has_${accessor}", $attribute->generate('has'), $remove_existing_method);
     }
 }
 

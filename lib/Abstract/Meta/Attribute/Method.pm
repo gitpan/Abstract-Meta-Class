@@ -5,7 +5,7 @@ use warnings;
 use Carp 'confess';
 use vars qw($VERSION);
 
-$VERSION = 0.03;
+$VERSION = 0.04;
 
 
 =head1 NAME
@@ -530,6 +530,93 @@ sub generate_hash_add_method {
     };
 }
 
+
+=item generate_scalar_reset_method
+
+=cut
+
+sub generate_scalar_reset_method {
+    my $attr = shift;
+    my $mutator = $attr->mutator;
+    my $index_by = $attr->index_by;
+    sub {
+        my ($self, ) = @_;
+        $self->$mutator(undef);
+    };
+}
+
+
+=item generate_scalar_has_method
+
+=cut
+
+sub generate_scalar_has_method {
+    my $attr = shift;
+    sub {
+        my ($self, ) = @_;
+        !! $attr->get_value($self);
+    };
+}
+
+
+=item generate_hash_reset_method
+
+=cut
+
+sub generate_hash_reset_method {
+    my $attr = shift;
+    my $mutator = $attr->mutator;
+    my $index_by = $attr->index_by;
+    sub {
+        my ($self, ) = @_;
+        $self->$mutator({});
+    };
+}
+
+
+
+=item generate_hash_has_method
+
+=cut
+
+sub generate_hash_has_method {
+    my $attr = shift;
+    sub {
+        my ($self, ) = @_;
+        my $value = $attr->get_value($self);
+        !! ($value && keys %$value);
+    };
+}
+
+
+
+=item generate_array_reset_method
+
+=cut
+
+sub generate_array_reset_method {
+    my $attr = shift;
+    my $mutator = $attr->mutator;
+    my $index_by = $attr->index_by;
+    sub {
+        my ($self, ) = @_;
+        $self->$mutator([]);
+    };
+}
+
+
+=item generate_array_has_method
+
+=cut
+
+sub generate_array_has_method {
+    my $attr = shift;
+    sub {
+        my ($self, ) = @_;
+        my $value = $attr->get_value($self);
+        !! ($value && @$value);
+    };
+}
 
 
 =item generate_hash_remove_method

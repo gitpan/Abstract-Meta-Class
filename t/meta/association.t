@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 35;
+use Test::More tests => 41;
     
 {
     package Class;
@@ -22,6 +22,9 @@ use Test::More tests => 35;
     like($@, qr{to_one must be of the AssociatedClass type},  'should catch invalid assocated_class - to one type');
     my $obj = Class->new(to_one => AssociatedClass->new);
     isa_ok($obj, 'Class');
+    ok($obj->has_to_one, 'should have value');
+    $obj->reset_to_one;
+    ok(! $obj->has_to_one, 'should have reset value');
 }
 
 {
@@ -29,6 +32,9 @@ use Test::More tests => 35;
     like($@, qr{ordered must be of the AssociatedClass type},  'should catch invalid assocated_class - ordered type' );
     my $obj = Class->new(ordered => [AssociatedClass->new]);
     isa_ok($obj, 'Class');
+    ok($obj->has_ordered, 'should have value');
+    $obj->reset_ordered;
+    ok(! $obj->has_ordered, 'should have reset value');
 }
 
 {
@@ -42,6 +48,11 @@ use Test::More tests => 35;
 
     is($obj->association('002'), $associations[0], 'should have indexed association');
     is($obj->association('302'), $associations[1], 'should have indexed association');
+
+    ok($obj->has_to_many, 'should have value');
+    $obj->reset_to_many;
+    ok(! $obj->has_to_many, 'should have reset value');
+
 }
 
 
