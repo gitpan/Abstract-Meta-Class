@@ -1,4 +1,7 @@
 
+use strict;
+use 5.006;
+
 use ExtUtils::MakeMaker;
 #auto_manifest;
 WriteMakefile(
