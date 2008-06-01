@@ -6,7 +6,7 @@ use Carp 'confess';
 use base 'Abstract::Meta::Attribute::Method';
 use vars qw($VERSION);
 
-$VERSION = 0.03;
+$VERSION = 0.04;
 
 =head1 NAME
 
@@ -80,7 +80,7 @@ Initialises attribute
             && ($type eq '@' || $type eq '%' || $args{associated_class}));
 
         $options{'&.' . $_ } = $args{$_}
-            for grep {exists $args{$_}} (qw(on_read on_change));
+            for grep {exists $args{$_}} (qw(on_read on_change on_validate));
         
         $options{'$.name'} = $accessor_name;
         $options{'$.storage_key'} = $storage_key;
@@ -352,6 +352,42 @@ sub set_on_change {
     my $meta= $attr->class->meta;
     $meta->install_attribute_methods($attr, 1);
 }
+
+
+
+
+
+=item on_validate
+
+Returns on validate code reference.
+It is executed before the data type validation happens.
+
+=cut
+
+sub on_validate { shift()->{'&.on_validate'} }
+
+
+=item set_on_validate
+
+Sets  code reference that will be replace data read routine
+
+   my $attr = MyClass->meta->attribute('attrs'); 
+    $attr->set_on_read(sub {
+        my ($self, $attribute, $scope, $key) = @_;
+        #do some stuff
+    });
+
+=cut
+
+sub set_on_validate {
+    my ($attr, $value) = @_;
+    $attr->{'&.on_validate'} = $value;
+    my $meta= $attr->class->meta;
+    $meta->install_attribute_methods($attr, 1);
+}
+
+
+
 
 1;    
 

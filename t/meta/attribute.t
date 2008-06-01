@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 45;
+use Test::More tests => 47;
 
 {
     package Dummy;
@@ -242,4 +242,23 @@ is($default->c->(), '123', 'should have code value');
     
     my $obj = StorageKey->new(x => 1, y => [1,2]);
     ::is_deeply($obj, {x => 1, y =>[1,2]}, 'should have storage key');
+}
+
+{
+    package Validate;
+    use Abstract::Meta::Class ':all';
+    my $attr = has '$.x' => (on_validate => sub {
+        
+    });
+    $attr->set_on_validate(
+        sub {
+            my ($self, $attribute, $scope, $value) = @_;
+            die 'invalid value' if($$value ne 1);
+        }
+    );
+    eval {
+        Validate->new(x => 2);
+    };
+    ::like($@, qr{invalid value}, 'should validate');
+    ::isa_ok(Validate->new(x => 1), 'Validate');
 }

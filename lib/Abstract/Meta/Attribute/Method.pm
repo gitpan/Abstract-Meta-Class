@@ -1,11 +1,12 @@
 package Abstract::Meta::Attribute::Method;
 
+
 use strict;
-use warnings;
+    use warnings;
 use Carp 'confess';
 use vars qw($VERSION);
 
-$VERSION = 0.04;
+$VERSION = 0.05;
 
 
 =head1 NAME
@@ -72,7 +73,7 @@ sub generate_mutator_method {
     my $index_by = $attr->index_by;
     my $on_change = $attr->on_change;
     my $data_type_validation = $attr->data_type_validation;
-
+    my $on_validate = $attr->on_validate;
 
     sub {
         my ($self, $value) = @_;
@@ -83,7 +84,8 @@ sub generate_mutator_method {
                 $value = $default;
             }
         }
-       
+
+        $on_validate->($self, $attr, 'mutator', \$value) if $on_validate;
         if ($data_type_validation) {
             $value = index_association_data($value, $accessor, $index_by)
                 if ($associated_class && $perl_type eq 'Hash');
