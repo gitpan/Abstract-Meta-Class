@@ -43,8 +43,8 @@ use Test::More tests => 41;
     my @associations = (AssociatedClass->new(a => '002'), AssociatedClass->new(a => '302'));
     my $obj = Class->new(to_many => \@associations);
     isa_ok($obj, 'Class');
-    my @exp_association = sort values %{$obj->to_many};
-    is_deeply(\@associations, \@exp_association, 'should have associations');
+    my @exp_association = values %{$obj->to_many};
+    is_deeply([sort @associations], [sort @exp_association], 'should have associations');
 
     is($obj->association('002'), $associations[0], 'should have indexed association');
     is($obj->association('302'), $associations[1], 'should have indexed association');

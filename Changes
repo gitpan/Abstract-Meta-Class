@@ -1,5 +1,8 @@
 Revision history for Perl extension Abstract::Meta::Class.
 
+0.09  Sun Jun 01 2008
+	-  fix test
+
 0.08  Sat May 31 2008
 	-  added on_validate trigger
 

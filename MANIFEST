@@ -1,4 +1,5 @@
 Changes
+examples/example1.pl
 lib/Abstract/Meta/Attribute.pm
 lib/Abstract/Meta/Attribute/Method.pm
 lib/Abstract/Meta/Class.pm
