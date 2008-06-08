@@ -6,7 +6,7 @@ use strict;
 use Carp 'confess';
 use vars qw($VERSION);
 
-$VERSION = 0.05;
+$VERSION = 0.06;
 
 
 =head1 NAME
@@ -415,7 +415,7 @@ sub generate_array_accessor_method {
         my ($self, @args) = @_;
         $self->$mutator(@args) if scalar(@args) >= 1;
         my $result = $on_read ? $on_read->($self, $attr, 'accessor')
-        : ($transistent ? get_attribute($self, $storage_key) : $self->{$storage_key});
+        : ($transistent ? get_attribute($self, $storage_key) : ($self->{$storage_key} ||= []));
         wantarray ? @$result : $result;
     };
 }
@@ -447,7 +447,7 @@ sub generate_hash_accessor_method {
             $self->$mutator(@args) if scalar(@args) >= 1;
             my $result = $on_read
                 ? $on_read->($self, $attr, 'accessor')
-                : ($transistent ?  get_attribute($self, $storage_key) : $self->{$storage_key});
+                : ($transistent ?  get_attribute($self, $storage_key) : ($self->{$storage_key} ||= {}));
             wantarray ? %$result : $result;
      };
 }
@@ -468,7 +468,7 @@ sub generate_to_many_accessor_method {
         $self->$mutator(@args) if scalar(@args) >= 1;
         my $result = $on_read
             ? $on_read->($self, $attr, 'accessor') 
-            : ($transistent ? get_attribute($self, $storage_key) : $self->{$storage_key});
+            : ($transistent ? get_attribute($self, $storage_key) : ($self->{$storage_key} ||= {}));
         wantarray ? %$result : $result;            
     };
 } 

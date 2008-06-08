@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK %EXPORT_TAGS);
 use Carp 'confess';
 use vars qw($VERSION);
 
-$VERSION = 0.09;
+$VERSION = 0.10;
 
 @EXPORT_OK = qw(has new apply_contructor_parameter install_meta_class abstract abstract_class);
 %EXPORT_TAGS = (all => \@EXPORT_OK, has => ['has', 'install_meta_class', 'abstract', 'abstract_class']);

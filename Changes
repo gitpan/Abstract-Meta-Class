@@ -1,5 +1,8 @@
 Revision history for Perl extension Abstract::Meta::Class.
 
+0.10  Sun Jun 08 2008
+	-  fix deserialization bug
+
 0.09  Sun Jun 01 2008
 	-  fix test
 

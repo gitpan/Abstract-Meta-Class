@@ -10,5 +10,6 @@ README
 t/meta/association.t
 t/meta/attribute.t
 t/meta/class.t
+t/meta/fix.t
 t/pod.t
 t/pod_coverage.t
