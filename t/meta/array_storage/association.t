@@ -5,7 +5,7 @@ use Test::More tests => 41;
     
 {
     package Class;
-    use Abstract::Meta::Class ':all';
+    use Abstract::Meta::Class ':all'; storage_type 'Array';
     has '$.to_one'  => (associated_class => 'AssociatedClass');
     has '@.ordered' => (associated_class => 'AssociatedClass');
     has '%.to_many' => (associated_class => 'AssociatedClass', index_by => 'a', item_accessor => 'association');
@@ -13,7 +13,7 @@ use Test::More tests => 41;
 
 {
     package AssociatedClass;
-    use Abstract::Meta::Class ':all';
+    use Abstract::Meta::Class ':all'; storage_type 'Array';
     has '$.a';
 }
 
@@ -58,7 +58,7 @@ use Test::More tests => 41;
 
 {
     package ClassA;
-    use Abstract::Meta::Class ':all';
+    use Abstract::Meta::Class ':all'; storage_type 'Array';
     has '$.to_oneA'  => (associated_class => 'AssociatedClassA', the_other_end => 'classAA' );
     has '$.to_one'  => (associated_class => 'AssociatedClassA', the_other_end => 'classA' );
     has '@.ordered' => (associated_class => 'AssociatedClassA');
@@ -68,7 +68,7 @@ use Test::More tests => 41;
 
 {
     package AssociatedClassA;
-    use Abstract::Meta::Class ':all';
+    use Abstract::Meta::Class ':all'; storage_type 'Array';
     has '$.a';
     has '$.ordered_ClassA' => (associated_class => 'ClassA', the_other_end => 'ordered');
     has '$.to_many_ClassA' => (associated_class => 'ClassA', the_other_end => 'to_many');
@@ -108,7 +108,7 @@ use Test::More tests => 41;
         #THE OTHER END BIDIRECTIONAL ASSOCIATION, DEASSOCIATION
     {
         package Master;
-        use Abstract::Meta::Class ':all';
+        use Abstract::Meta::Class ':all'; storage_type 'Array';
         has '$.name' => (required => 1);
         has '%.details' => (
             associated_class => 'Detail',
@@ -120,7 +120,7 @@ use Test::More tests => 41;
 
     {
         package Detail;
-        use Abstract::Meta::Class ':all';
+        use Abstract::Meta::Class ':all'; storage_type 'Array';
         has '$.id'     => (required => 1);
         has '$.master' => (
             associated_class => 'Master',
@@ -168,7 +168,7 @@ use Test::More tests => 41;
         #THE OTHER END BIDIRECTIONAL ASSOCIATION, DEASSOCIATION
     {
         package MasterA;
-        use Abstract::Meta::Class ':all';
+        use Abstract::Meta::Class ':all'; storage_type 'Array';
         has '$.name' => (required => 1);
         has '@.details' => (
             associated_class => 'DetailA',
@@ -180,7 +180,7 @@ use Test::More tests => 41;
 
     {
         package DetailA;
-        use Abstract::Meta::Class ':all';
+        use Abstract::Meta::Class ':all'; storage_type 'Array';
         has '$.id'     => (required => 1);
         has '$.master' => (
             associated_class => 'MasterA',

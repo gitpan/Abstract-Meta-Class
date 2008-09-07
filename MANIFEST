@@ -7,6 +7,9 @@ Makefile.PL
 MANIFEST
 META.yml			Module meta-data (added by MakeMaker)
 README
+t/meta/array_storage/association.t
+t/meta/array_storage/attribute.t
+t/meta/array_storage/class.t
 t/meta/association.t
 t/meta/attribute.t
 t/meta/class.t

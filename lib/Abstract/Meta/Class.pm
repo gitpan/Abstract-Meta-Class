@@ -8,10 +8,10 @@ use vars qw(@EXPORT_OK %EXPORT_TAGS);
 use Carp 'confess';
 use vars qw($VERSION);
 
-$VERSION = 0.10;
+$VERSION = 0.11;
 
-@EXPORT_OK = qw(has new apply_contructor_parameter install_meta_class abstract abstract_class);
-%EXPORT_TAGS = (all => \@EXPORT_OK, has => ['has', 'install_meta_class', 'abstract', 'abstract_class']);
+@EXPORT_OK = qw(has new apply_contructor_parameter install_meta_class abstract abstract_class storage_type);
+%EXPORT_TAGS = (all => \@EXPORT_OK, has => ['has', 'install_meta_class', 'abstract', 'abstract_class', 'storage_type']);
 
 use Abstract::Meta::Attribute;
 use Abstract::Meta::Attribute::Method;
@@ -25,13 +25,18 @@ Abstract::Meta::Class - Simple meta object protocol implementation.
     package Dummy;
 
     use Abstract::Meta::Class ':all';
-
+    
+    
     has '$.attr1' => (default => 0);
     has '%.attrs2' => (default => {a => 1, b => 3}, item_accessor => 'attr2');
     has '@.atts3' => (default => [1, 2, 3], required => 1, item_accessor => 'attr3');
     has '&.att3' => (required => 1);
     has '$.att4' => (default => sub { 'stuff' } , required => 1);
 
+
+    my $dummt = Dummy->new(
+        att3 => 3,
+    );
 
     use Dummy;
 
@@ -50,6 +55,32 @@ Abstract::Meta::Class - Simple meta object protocol implementation.
 =head1 DESCRIPTION
 
 Meta object protocol implementation,
+
+=head2 hash/array storage type
+
+To speed up bless time as well optimise memory usage you can use Array storage type.
+(Hash is the default storage type)
+
+    package Dummy;
+
+    use Abstract::Meta::Class ':all';
+    storage_type 'Array';
+    
+    has '$.attr1' => (default => 0);
+    has '%.attrs2' => (default => {a => 1, b => 3}, item_accessor => 'attr2');
+    has '@.attrs3' => (default => [1, 2, 3], required => 1, item_accessor => 'attr3');
+    has '&.attr4' => (required => 1);
+    has '$.attr5';
+    has '$.attr6' => (default => sub { 'stuff' } , required => 1);
+
+
+    my $dummy = Dummy->new(
+        attr4 => sub {},
+    );
+    
+    use Data::Dumper;
+    warn Dumper $dummy;
+    # bless [0, {a =>1,b => 3}, [1,2,3],sub{},undef,sub {}], 'Dummy'
 
 =head2 simple validation and default values
 
@@ -423,12 +454,19 @@ Install constructor
 
 sub install_constructor {
     my ($self) = @_;
-    add_method($self->associated_class, 'new' , sub {
-        my $class = shift;
-        my $this = bless {}, $class;
-        unshift @_, $this;
-        &apply_contructor_parameters;
-    });
+    add_method($self->associated_class, 'new' ,
+        $self->storage_type eq 'Array' ?
+        sub {
+            my $class = shift;
+            my $this = bless [], $class;
+            unshift @_, $this;
+            &apply_contructor_parameters;
+        }: sub {
+            my $class = shift;
+            my $this = bless {}, $class;
+            unshift @_, $this;
+            &apply_contructor_parameters;
+        });
 }
 
 
@@ -438,28 +476,39 @@ Applies constructor parameters.
 
 =cut
 
-sub apply_contructor_parameters {
-    my ($self, @args) = @_;
-    for (my $i = 0; $i < $#args; $i += 2) {
-        my $can = $self->can("set_" . $args[$i])
-           or confess "unknown attribute " . ref($self) ."::" . $args[$i];
-        $can->($self, $args[$i + 1]);
-    }
-
-    my $meta = $self->meta;
-
-    for my $attribute ($meta->apply_attributes) {
-        if(! $attribute->get_value($self)) {
-            my $can = $self->can($attribute->mutator) or next;
-            $can->($self);
+{
+    sub apply_contructor_parameters {
+        my ($self, @args) = @_;
+        my $mutator;
+        my $class = ref($self);
+        eval {
+            for (my $i = 0; $i < $#args; $i += 2) {
+                    $mutator = "set_" . $args[$i];
+                    $self->$mutator($args[$i + 1]);
+            }
+        };
+        
+        if ($@) {
+            confess "unknown attribute " . ref($self) ."::" . $mutator
+                unless $self->can($mutator);
+            confess $@    
         }
+        
+        my $meta = $self->meta;
+        return $self if $self eq $meta;
+    
+        for my $attribute ($meta->constructor_attributes) {
+            if(! $attribute->get_value($self)) {
+                my $can = $self->can($attribute->mutator) or next;
+                $can->($self);
+            }
+        }
+    
+        my $initialise = $self->can($meta->initialise_method);
+        $initialise->($self) if $initialise;
+        $self;
     }
-
-    my $initialise = $self->can($meta->initialise_method);
-    $initialise->($self) if $initialise;
-    $self;
 }
-
 
 =item meta
 
@@ -579,6 +628,7 @@ Mutator sets associated class name
 sub set_associated_class { $_[0]->{'$.associated_class'} = $_[1]; }
 
 
+
 =item all_attributes
 
 Returns all_attributes for all inherited meta classes
@@ -612,6 +662,9 @@ sub attribute {
     my @result = (grep {$_->accessor eq $name} @$attributes);
     @result ? $result[0] : undef;
 }
+
+
+
 
 
 =item super_classes
@@ -693,13 +746,36 @@ sub has {
     my $name = shift;
     my $package = caller();
     my $meta_class = meta_class($package);
-    my $attribute = $meta_class->attribute_class->new(name => $name, @_, class => $package);
+    my $attribute = $meta_class->attribute_class->new(name => $name, @_, class => $package, storage_type => $meta_class->storage_type);
     $meta_class->add_attribute($attribute);
     $meta_class->install_cleanup
         if($attribute->transistent || $attribute->index_by);
     $meta_class->install_destructor
         if $attribute->transistent;
     $attribute;
+}
+
+
+=item storage_type
+
+Sets storage type for the attributes.
+allowed values are Array/Hash
+
+=cut
+
+sub storage_type {
+    my ($param) = @_;
+    return $param->{'$.storage_type'} ||= 'Hash'
+        if (ref($param));
+    my $type = $param;
+    confess "unknown storage type $type - should be Array or Hash"
+        unless($type =~ /Array|Hash/);
+    my $package = caller();
+    my $meta_class = meta_class($package);
+    $meta_class->{'$.storage_type'} = $type;
+    remove_method($meta_class->associated_class, 'new');
+    $meta_class->install_constructor();
+   
 }
 
 
@@ -715,6 +791,7 @@ sub abstract {
     my $meta_class = meta_class($package);
     $meta_class->install_abstract_methods($name);
 }
+
 
 
 =item abstract_class
@@ -811,19 +888,18 @@ sub remove_method {
 }
 
 
-=item apply_attributes
+
+=item constructor_attributes
 
 Returns a list of attributes that need be validated and all that have default value
 
 =cut
 
-sub apply_attributes {
+sub constructor_attributes {
     my ($self) = @_;
     my $all_attributes = $self->all_attributes || [];
-    (grep  {$_->required || defined $_->default}  @$all_attributes);
+    grep  {$_->required || defined $_->default}  @$all_attributes;
 }
-
-
 
 1
 

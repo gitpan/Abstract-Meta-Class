@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Abstract-Meta-Class
-version:             0.10
+version:             0.11
 author:
   - 'Adrian Witas <adrian@webapp.strefa.pl>'
 abstract: Simple meta object protocol implementation.

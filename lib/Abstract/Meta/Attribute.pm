@@ -69,7 +69,14 @@ Initialises attribute
             unless Abstract::Meta::Attribute->can($k);
         }
         my $name = $args{name} or confess "name is requried";
-        my $storage_key = $args{storage_key} || $args{name};
+        my $storage_type = $args{storage_type} = $args{transistent} ? 'Hash' : $args{storage_type} || '';
+        
+        my $attribute_index = 0;
+        if($storage_type  eq 'Array')  {
+            my $meta_class= Abstract::Meta::Class::meta_class($args{class});
+            $attribute_index = $#{$meta_class->all_attributes} + 1;
+        }
+        
         my ($type, $accessor_name) = ($name =~ /^([\$\@\%\&])\.(.*)$/);
         confess "invalid attribute defintion ${class}::" .($accessor_name || $name) .", supported prefixes are \$.,%.,\@.,&."
           if ! $type || ! $supported_type{$type};
@@ -82,13 +89,16 @@ Initialises attribute
         $options{'&.' . $_ } = $args{$_}
             for grep {exists $args{$_}} (qw(on_read on_change on_validate));
         
+        
+        my $storage_key = $storage_type eq 'Array' ? $attribute_index : $args{storage_key} || $args{name};
+
         $options{'$.name'} = $accessor_name;
         $options{'$.storage_key'} = $storage_key;
         $options{'$.mutator'} = "set_$accessor_name";
         $options{'$.accessor'} = $accessor_name;
         $options{'$.' . $_ } = $args{$_}
           for grep {exists $args{$_}}
-            (qw(class required default item_accessor associated_class data_type_validation index_by the_other_end transistent));
+            (qw(class required default item_accessor associated_class data_type_validation index_by the_other_end transistent storage_type));
           
         $options{'$.perl_type'} = $supported_type{$type};
         unless  ($args{default}) {
@@ -174,6 +184,15 @@ Returns default value
 =cut
 
 sub default { shift()->{'$.default'} }
+
+
+=item storage_type
+
+Hash|Array
+
+=cut
+
+sub storage_type { shift()->{'$.storage_type'} ||= 'Hash' }
 
 
 =item transistent

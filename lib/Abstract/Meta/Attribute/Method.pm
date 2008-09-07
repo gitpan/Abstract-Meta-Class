@@ -2,7 +2,7 @@ package Abstract::Meta::Attribute::Method;
 
 
 use strict;
-    use warnings;
+use warnings;
 use Carp 'confess';
 use vars qw($VERSION);
 
@@ -36,6 +36,34 @@ sub generate_scalar_accessor_method {
     my $storage_key = $attr->storage_key;
     my $transistent = $attr->transistent;    
     my $on_read = $attr->on_read;
+    my $array_storage_type = $attr->storage_type eq 'Array';
+    $array_storage_type ? 
+        ($transistent ? sub {
+            my ($self, @args) = @_;
+            $self->$mutator(@args) if scalar(@args) >= 1;
+            my $result = $on_read
+            ? $on_read ->($self, $attr, 'accessor')
+            : get_attribute($self, $storage_key);
+            $result;
+        }
+        : (
+           $on_read ?
+           sub {
+            my ($self, @args) = @_;
+            $self->$mutator(@args) if scalar(@args) >= 1;
+            my $result = $on_read
+            ? $on_read ->($self, $attr, 'accessor')
+            : $self->[$storage_key];
+            $result;
+            } :
+            sub {
+                my ($self, @args) = @_;
+                $self->$mutator(@args) if @args >= 1;
+                $self->[$storage_key];
+            }
+           )
+        )
+    :
     sub {
         my ($self, @args) = @_;
         $self->$mutator(@args) if scalar(@args) >= 1;
@@ -74,7 +102,8 @@ sub generate_mutator_method {
     my $on_change = $attr->on_change;
     my $data_type_validation = $attr->data_type_validation;
     my $on_validate = $attr->on_validate;
-
+    my $array_storage_type = $attr->storage_type eq 'Array';
+    $array_storage_type ?
     sub {
         my ($self, $value) = @_;
         if (! defined $value && defined $default) {
@@ -89,11 +118,64 @@ sub generate_mutator_method {
         if ($data_type_validation) {
             $value = index_association_data($value, $accessor, $index_by)
                 if ($associated_class && $perl_type eq 'Hash');
-            $attr->validate_data_type($self, $value, $accessor, $associated_class, $perl_type)
-        }
+            $attr->validate_data_type($self, $value, $accessor, $associated_class, $perl_type);
+            if($required) {
+                if ($perl_type eq 'Hash') {
+                    confess "attribute $accessor is required"
+                      unless scalar %$value;
+                      
+                } elsif ($perl_type eq 'Array') {
+                    confess "attribute $accessor is required"
+                      unless scalar @$value;
+                }
+            }
 
+        } else {
         confess "attribute $accessor is required"
           if $required && ! defined $value;
+        }
+        
+        $on_change->($self, $attr, 'mutator', \$value) or return $self
+          if ($on_change && defined $value);
+        
+
+        if ($transistent) {
+            set_attribute($self, $storage_key, $value);
+        } else {
+            $self->[$storage_key] = $value;
+        }
+        $self;
+    }    
+    :
+    sub {
+        my ($self, $value) = @_;
+        if (! defined $value && defined $default) {
+            if (ref($default) eq 'CODE') {
+                $value = $default->($self, $attr);
+            } else {
+                $value = $default;
+            }
+        }
+
+        $on_validate->($self, $attr, 'mutator', \$value) if $on_validate;
+        if ($data_type_validation) {
+            $value = index_association_data($value, $accessor, $index_by)
+                if ($associated_class && $perl_type eq 'Hash');
+            $attr->validate_data_type($self, $value, $accessor, $associated_class, $perl_type);
+            if($required) {
+                if ($perl_type eq 'Hash') {
+                    confess "attribute $accessor is required"
+                      unless scalar %$value;
+                      
+                } elsif ($perl_type eq 'Array') {
+                    confess "attribute $accessor is required"
+                      unless scalar @$value;
+                }
+            }
+        } else {
+            confess "attribute $accessor is required"
+              if $required && ! defined $value;
+        }
 
         
         $on_change->($self, $attr, 'mutator', \$value) or return $self
@@ -106,7 +188,7 @@ sub generate_mutator_method {
             $self->{$storage_key} = $value;
         }
         $self;
-    }
+    };
 }
 
 
@@ -133,6 +215,7 @@ sub index_association_data {
 
 sub validate_data_type {
     my ($attr, $self, $value, $accessor, $associated_class, $perl_type) = @_;
+    my $array_storage_type = $attr->storage_type eq 'Array';
     if ($perl_type eq 'Array') {
         confess "$accessor must be $perl_type type"
             unless (ref($value) eq 'ARRAY');
@@ -150,7 +233,7 @@ sub validate_data_type {
     } elsif ($associated_class) {
         my $transistent = $attr->transistent;    
         my $storage_key = $attr->storage_key;
-        my $current_value = $transistent ? get_attribute($self, $storage_key) : $self->{$storage_key};
+        my $current_value = $transistent ? get_attribute($self, $storage_key) : ($array_storage_type ? $self->[$storage_key] : $self->{$storage_key});
         return if ($value && $current_value && $value eq $current_value);
         $attr->deassociate($self);
         if (defined $value) {
@@ -311,7 +394,8 @@ sub deassociate {
     my ($attr, $self) = @_;
     my $transistent = $attr->transistent;    
     my $storage_key = $attr->storage_key;
-    my $value = ($transistent ? get_attribute($self, $storage_key) : $self->{$storage_key}) or return;
+    my $array_storage_type = $attr->storage_type eq 'Array';
+    my $value = ($transistent ? get_attribute($self, $storage_key) : ($array_storage_type ? $self->[$storage_key] : $self->{$storage_key})) or return;
     my $the_other_end = $attr->the_other_end;
     return if ! $the_other_end || has_pending_association($value);
     start_association_process($self);
@@ -411,6 +495,16 @@ sub generate_array_accessor_method {
     my $storage_key = $attr->storage_key;
     my $transistent = $attr->transistent;
     my $on_read = $attr->on_read;
+    my $array_storage_type = $attr->storage_type eq 'Array';
+    $array_storage_type ?
+    sub {
+        my ($self, @args) = @_;
+        $self->$mutator(@args) if scalar(@args) >= 1;
+        my $result = $on_read ? $on_read->($self, $attr, 'accessor')
+        : ($transistent ? get_attribute($self, $storage_key) : ($self->[$storage_key] ||= []));
+        wantarray ? @$result : $result;
+    }    
+    :
     sub {
         my ($self, @args) = @_;
         $self->$mutator(@args) if scalar(@args) >= 1;
@@ -440,16 +534,26 @@ sub generate_hash_accessor_method {
     my $storage_key = $attr->storage_key;
     my $transistent = $attr->transistent;
     my $on_read = $attr->on_read;
+    my $array_storage_type = $attr->storage_type eq 'Array';
     $attr->associated_class
     ?  $attr->generate_to_many_accessor_method
-    :  sub {
+    :  ($array_storage_type ?
+        sub {
+            my ($self, @args) = @_;
+            $self->$mutator(@args) if scalar(@args) >= 1;
+            my $result = $on_read
+                ? $on_read->($self, $attr, 'accessor')
+                : ($transistent ?  get_attribute($self, $storage_key) : ($self->[$storage_key] ||= {}));
+            wantarray ? %$result : $result;
+        } 
+        : sub {
             my ($self, @args) = @_;
             $self->$mutator(@args) if scalar(@args) >= 1;
             my $result = $on_read
                 ? $on_read->($self, $attr, 'accessor')
                 : ($transistent ?  get_attribute($self, $storage_key) : ($self->{$storage_key} ||= {}));
             wantarray ? %$result : $result;
-     };
+     });
 }
 
 
@@ -463,6 +567,17 @@ sub generate_to_many_accessor_method {
     my $storage_key = $attr->storage_key;
     my $transistent = $attr->transistent;
     my $on_read = $attr->on_read;
+    my $array_storage_type = $attr->storage_type eq 'Array';
+    $array_storage_type ?
+    sub {
+        my ($self, @args) = @_;
+        $self->$mutator(@args) if scalar(@args) >= 1;
+        my $result = $on_read
+            ? $on_read->($self, $attr, 'accessor') 
+            : ($transistent ? get_attribute($self, $storage_key) : ($self->[$storage_key] ||= {}));
+        wantarray ? %$result : $result;            
+    }    
+    :
     sub {
         my ($self, @args) = @_;
         $self->$mutator(@args) if scalar(@args) >= 1;
@@ -823,10 +938,13 @@ Sets value for attribute
 
 sub set_value {
     my ($attr, $self, $value) = @_;
+    my $array_storage_type = $attr->storage_type eq 'Array';
     my $storage_key = $attr->storage_key;
     my $transistent = $attr->transistent;
     if($transistent) {
         set_attribute($self, $storage_key, $value);
+    } elsif($array_storage_type) {
+        $self->[$storage_key] = $value;
     } else {
         $self->{$storage_key} = $value;
     }
@@ -843,8 +961,11 @@ sub get_value {
     my ($attr, $self) = @_;
     my $storage_key = $attr->storage_key;
     my $transistent = $attr->transistent;
+    my $array_storage_type = $attr->storage_type eq 'Array';
     if ($transistent) {
         return get_attribute($self, $storage_key);
+    } elsif($array_storage_type) {
+        $self->[$storage_key];
     } else {
         return $self->{$storage_key};
     }

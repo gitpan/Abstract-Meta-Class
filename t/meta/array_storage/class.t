@@ -7,6 +7,7 @@ use Test::More tests => 7;
 {
     package SuperDummy;
     use Abstract::Meta::Class ':all';
+    storage_type 'Array';
     has '$.x' => (default => 'x value');
     has '$.z' => (default => 'z value');
 
@@ -14,8 +15,9 @@ use Test::More tests => 7;
 
 {
     package SubDummy;
-    use Abstract::Meta::Class ':all';
     use base 'SuperDummy';
+    use Abstract::Meta::Class ':all';
+    storage_type 'Array';
     has '$.y';
     has '$.k';
 }
@@ -28,6 +30,7 @@ use Test::More tests => 7;
 {
     package Custom;
     use Abstract::Meta::Class ':has';
+    storage_type 'Array';
     has '$.a';
     Custom->meta->install_constructor;
     # or your own contructor
@@ -40,6 +43,7 @@ use Test::More tests => 7;
 {
     package Initialise;
     use Abstract::Meta::Class ':all';
+    storage_type 'Array';
     has '$.attr';
     Initialise->meta->set_initialise_method('init');;
     sub init {
@@ -55,6 +59,7 @@ use Test::More tests => 7;
 {
     package ClassA;
     use Abstract::Meta::Class ':all';
+    storage_type 'Array';
     
     has '$.z' => (default => 0);
     abstract 'method1';
