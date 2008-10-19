@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK %EXPORT_TAGS);
 use Carp 'confess';
 use vars qw($VERSION);
 
-$VERSION = 0.11;
+$VERSION = 0.12;
 
 @EXPORT_OK = qw(has new apply_contructor_parameter install_meta_class abstract abstract_class storage_type);
 %EXPORT_TAGS = (all => \@EXPORT_OK, has => ['has', 'install_meta_class', 'abstract', 'abstract_class', 'storage_type']);
@@ -758,13 +758,13 @@ sub has {
 
 =item storage_type
 
-Sets storage type for the attributes.
-allowed values are Array/Hash
+Sets storage type for the attributes, optionally constructor code ref
+allowed values are Array/Hash, \
 
 =cut
 
 sub storage_type {
-    my ($param) = @_;
+    my ($param, $new_callback) = @_;
     return $param->{'$.storage_type'} ||= 'Hash'
         if (ref($param));
     my $type = $param;
@@ -774,8 +774,17 @@ sub storage_type {
     my $meta_class = meta_class($package);
     $meta_class->{'$.storage_type'} = $type;
     remove_method($meta_class->associated_class, 'new');
-    $meta_class->install_constructor();
-   
+    if($new_callback) {
+        add_method($meta_class->associated_class, 'new', $new_callback);
+    } else {
+        $meta_class->install_constructor();
+    }
+    my $cache;
+    add_method($meta_class->associated_class, 'as_hash', sub {
+        my ($this) = @_;
+        $cache ||= {(map { $_->accessor => $_->storage_key} @{$meta_class->all_attributes})};
+        {map {$_ => $this->[$cache->{$_}]} keys %$cache};
+    });
 }
 
 
@@ -901,7 +910,7 @@ sub constructor_attributes {
     grep  {$_->required || defined $_->default}  @$all_attributes;
 }
 
-1
+1;
 
 __END__
 

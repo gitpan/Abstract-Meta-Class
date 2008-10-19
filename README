@@ -1,4 +1,4 @@
-Abstract/Meta/Class version 0.11
+Abstract/Meta/Class version 0.12
 ===========================
  Simple meta object protocol implementation.
 
@@ -24,4 +24,3 @@ COPYRIGHT AND LICENCE
     
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself. 
-

@@ -1,5 +1,8 @@
 Revision history for Perl extension Abstract::Meta::Class.
 
+0.12  Sun Oct 19 2008
+        - added custom constructor for array storage type
+
 0.11  Sun Sep 07 2007
         - added array storage type
         - fix required value for arra and hash perl type attribute

@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 7;
+use Test::More tests => 10;
 
 {
     package SuperDummy;
@@ -74,4 +74,15 @@ use Test::More tests => 7;
     ::like($@, qr{Can't instantiate abstract class}, 'can\'t instantiate abstract class');
 }
 
- 
+{
+    package ClassD;
+    use Abstract::Meta::Class ':all';
+    storage_type 'Array' , sub {my $class  = shift; bless [@_], $class} ;
+    has '$.a';
+    has '$.b';
+}
+
+    my $d = ClassD->new(121,1);
+    isa_ok($d, 'ClassD');
+    is($d->a, 121, 'should hava a attribute');
+    is($d->b, 1, 'should hava b attribute');

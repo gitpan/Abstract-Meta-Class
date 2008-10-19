@@ -508,8 +508,12 @@ sub generate_array_accessor_method {
     sub {
         my ($self, @args) = @_;
         $self->$mutator(@args) if scalar(@args) >= 1;
-        my $result = $on_read ? $on_read->($self, $attr, 'accessor')
+	my $result;	
+	eval {
+         $result = $on_read ? $on_read->($self, $attr, 'accessor')
         : ($transistent ? get_attribute($self, $storage_key) : ($self->{$storage_key} ||= []));
+	};
+	confess $@ if $@;
         wantarray ? @$result : $result;
     };
 }
