@@ -1,5 +1,8 @@
 Revision history for Perl extension Abstract::Meta::Class.
 
+0.13 Sun Nov 23 2008
+	- added hash helper methods (exists, count, values, keys), improved documentation
+
 0.12  Sun Oct 19 2008
         - added custom constructor for array storage type
 

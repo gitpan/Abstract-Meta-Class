@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK %EXPORT_TAGS);
 use Carp 'confess';
 use vars qw($VERSION);
 
-$VERSION = 0.12;
+$VERSION = 0.13;
 
 @EXPORT_OK = qw(has new apply_contructor_parameter install_meta_class abstract abstract_class storage_type);
 %EXPORT_TAGS = (all => \@EXPORT_OK, has => ['has', 'install_meta_class', 'abstract', 'abstract_class', 'storage_type']);
@@ -239,7 +239,8 @@ To speed up bless time as well optimise memory usage you can use Array storage t
 
 =head2 decorators
 
-....- on_validate
+
+    - on_validate
 
     - on_change
 
@@ -253,7 +254,7 @@ To speed up bless time as well optimise memory usage you can use Array storage t
 
     has '@.y' => (
         on_change => sub {
-            my ($self, $attribute_name, $scope, $value_ref, $index) = @_;
+            my ($self, $attribute, $scope, $value_ref, $index) = @_;
             # scope -> mutator, item_accessor
             ... do some stuff
 
@@ -262,7 +263,7 @@ To speed up bless time as well optimise memory usage you can use Array storage t
         },
         # replaces standard read
         on_read => sub {
-            my ($self, $attr_name, $scope, $index)
+            my ($self, $attribute, $scope, $index)
             #scope can be: item_accessor, accessor
             ...
             #return requested value
@@ -479,17 +480,19 @@ Applies constructor parameters.
 {
     sub apply_contructor_parameters {
         my ($self, @args) = @_;
+        my $attribute;
         my $mutator;
         my $class = ref($self);
         eval {
             for (my $i = 0; $i < $#args; $i += 2) {
                     $mutator = "set_" . $args[$i];
+                    $attribute = $args[$i];
                     $self->$mutator($args[$i + 1]);
             }
         };
         
         if ($@) {
-            confess "unknown attribute " . ref($self) ."::" . $mutator
+            confess "unknown attribute " . ref($self) ."::" . $attribute
                 unless $self->can($mutator);
             confess $@    
         }
@@ -849,7 +852,13 @@ sub install_attribute_methods {
     my $perl_type = $attribute->perl_type ;
     if ($perl_type eq 'Array') {
         add_method($self->associated_class, "${_}_$accessor", $attribute->generate("$_"), $remove_existing_method)
-        for qw(count push pop shift unshift);
+            for qw(count push pop shift unshift);
+            
+    } elsif($perl_type eq 'Hash') {
+        add_method($self->associated_class, "${accessor}_${_}", $attribute->generate("$_"), $remove_existing_method)
+            for qw(values keys);
+        add_method($self->associated_class, "${_}_$accessor", $attribute->generate("$_"), $remove_existing_method)
+            for qw(count exists_in);           
     }
 
     if (my $item_accessor = $attribute->item_accessor) {

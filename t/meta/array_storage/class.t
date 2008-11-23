@@ -1,4 +1,3 @@
-
 use strict;
 use warnings;
 
@@ -10,7 +9,6 @@ use Test::More tests => 10;
     storage_type 'Array';
     has '$.x' => (default => 'x value');
     has '$.z' => (default => 'z value');
-
 }
 
 {
@@ -25,7 +23,6 @@ use Test::More tests => 10;
     my $subclass = SubDummy->new;
     isa_ok($subclass,'SubDummy');
     is($subclass->x, 'x value', 'should have x value');
-   
 
 {
     package Custom;
@@ -38,7 +35,6 @@ use Test::More tests => 10;
 
     my $custom = Custom->new;
     isa_ok($custom, 'Custom');
-    
 
 {
     package Initialise;
@@ -51,16 +47,15 @@ use Test::More tests => 10;
         $self->set_attr('initialise ...');
     }
 }
-    
+
     my $init = Initialise->new;
     is($init->attr,'initialise ...', 'should have initialise ...');
-    
     
 {
     package ClassA;
     use Abstract::Meta::Class ':all';
     storage_type 'Array';
-    
+
     has '$.z' => (default => 0);
     abstract 'method1';
 

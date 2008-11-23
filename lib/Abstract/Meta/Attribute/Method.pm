@@ -920,6 +920,65 @@ sub generate_array_remove_method {
     };
 }
 
+=item generate_hash_count_method
+
+=cut
+
+sub generate_hash_count_method {
+    my $attr = shift;
+    my $accesor = $attr->accessor;
+    sub {
+        my $self = shift;
+        my $hash_ref = $self->$accesor();
+        scalar keys %$hash_ref;
+    };
+}
+
+
+=item generate_hash_exists_in_method
+
+=cut
+
+sub generate_hash_exists_in_method {
+    my $attr = shift;
+    my $accesor = $attr->accessor;
+    sub {
+        my ($self, $key) = @_;
+        my $hash_ref = $self->$accesor();
+        exists $hash_ref->{$key};
+    };
+}
+
+
+=item generate_hash_values_method
+
+=cut
+
+sub generate_hash_values_method {
+    my $attr = shift;
+    my $accesor = $attr->accessor;
+    sub {
+        my ($self, $key) = @_;
+        my $hash_ref = $self->$accesor();
+        wantarray ? values %$hash_ref : values %$hash_ref;
+    };
+}
+
+
+=item generate_hash_keys_method
+
+=cut
+
+sub generate_hash_keys_method {
+    my $attr = shift;
+    my $accesor = $attr->accessor;
+    sub {
+        my ($self, $key) = @_;
+        my $hash_ref = $self->$accesor();
+        wantarray ? keys %$hash_ref : keys %$hash_ref;
+    };
+}
+
 
 =item generate
 

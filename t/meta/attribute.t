@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 47;
+use Test::More tests => 52;
 
 {
     package Dummy;
@@ -39,6 +39,14 @@ my $hash = Dummy::Hash->new(xs => {key1 => 1, key2 => 2});
 isa_ok($hash, 'Dummy::Hash', 'should have a Dummy::Hash instance');
 is($hash->x('key1'), 1, 'should have key1 value');
 is($hash->x('key2'), 2, 'should have key2 value');
+is($hash->count_xs, 2, 'should count hash items');
+ok($hash->exists_in_xs('key1'), 'should exists in xs');
+ok(! $hash->exists_in_xs('key3'), 'should not exists in xs');
+my @values = $hash->xs_values;
+my @keys = $hash->xs_keys;
+is_deeply([$hash->xs_values], \@values, 'should have hash values');
+is_deeply([$hash->xs_keys], \@keys, 'should have hash values');
+
 
 
 {
